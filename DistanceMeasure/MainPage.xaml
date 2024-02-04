@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="DistanceMeasure.MainPage"
+             xmlns:viewmodel="clr-namespace:DistanceMeasure.ViewModel"
+             xmlns:model="clr-namespace:DistanceMeasure.Model"
+             x:DataType="viewmodel:MainPageViewModel">
+
+
+    <ScrollView>
+        <StackLayout 
+            HorizontalOptions="Center"
+            MaximumWidthRequest="300">
+            
+            <Button Text="Search for ESP Mesh."
+                Margin="0,5"
+                HorizontalOptions="FillAndExpand"
+                Command="{Binding SearchForMeshCommand}"/>
+
+            <CollectionView 
+                        ItemsSource="{Binding Items}"
+                        SelectionMode="None"
+                        HorizontalOptions="Center">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="model:MeshNetworkEntity">
+                        <Grid Padding="0,5">
+                            <Frame>
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer 
+                                        CommandParameter="{Binding .}"/>
+                                </Frame.GestureRecognizers>
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding MeshId,               StringFormat='Mesh ID: {0}'}"   FontSize="18"/>
+                                    <Label Text="{Binding MeshServerName,       StringFormat='Server is \'{0}\''}"  FontSize="18"/>
+                                    <HorizontalStackLayout>
+                                        <Label Text="{Binding IpAddress,        StringFormat='Address: {0}'}"   FontSize="18"/>
+                                    </HorizontalStackLayout>
+                                </VerticalStackLayout>
+                            </Frame>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            <Grid WidthRequest="300"/>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>
