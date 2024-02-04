@@ -1,4 +1,5 @@
-﻿using DistanceMeasure.ViewModel;
+﻿using DistanceMeasure.View;
+using DistanceMeasure.ViewModel;
 using Microsoft.Extensions.Logging;
 
 namespace DistanceMeasure
@@ -22,6 +23,9 @@ namespace DistanceMeasure
 
             builder.Services.AddSingleton<MainPage>();
             builder.Services.AddSingleton<MainPageViewModel>();
+
+            builder.Services.AddTransient<MeshPage>();
+            builder.Services.AddTransient<MeshPageViewModel>();
 
             return builder.Build();
         }

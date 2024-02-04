@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="DistanceMeasure.View.MeshPage"
+             Title="MeshPage"
+             xmlns:viewmodel="clr-namespace:DistanceMeasure.ViewModel"
+             xmlns:model="clr-namespace:DistanceMeasure.Model"
+             x:DataType="viewmodel:MeshPageViewModel"
+             >
+    <ScrollView>
+        <VerticalStackLayout
+                HorizontalOptions="Center"
+                MaximumWidthRequest="300">
+            <Label 
+                Text="{Binding SelectedMesh.MeshId, StringFormat='Mesh network: {0}'}"
+                Margin="0,5"
+                VerticalOptions="Center"
+                HorizontalOptions="FillAndExpand"
+                FontSize="18"/>
+            <CollectionView 
+                ItemsSource="{Binding MeshNodes}"
+                SelectionMode="None"
+                HorizontalOptions="Center">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="model:MeshNodeEntity">
+                        <Grid Padding="0,5">
+                            <Frame>
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Name,             StringFormat='Node: {0}'}"       FontSize="18"/>
+                                    <Label Text="{Binding MacAddress,       StringFormat='Mac:  {0}'}"  FontSize="18"/>
+                                 </VerticalStackLayout>
+                            </Frame>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            <Grid WidthRequest="300"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

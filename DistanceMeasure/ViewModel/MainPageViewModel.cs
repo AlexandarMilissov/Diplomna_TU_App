@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using DistanceMeasure.Model;
 using DistanceMeasure.Utils;
+using DistanceMeasure.View;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net;
@@ -32,11 +33,13 @@ namespace DistanceMeasure.ViewModel
 
 
         [ObservableProperty]
-        ObservableCollection<MeshNetworkEntity> items = [];
+        ObservableCollection<MeshNetworkEntity> meshNetworks = [];
 
         [RelayCommand]
         void SearchForMesh()
         {
+            MeshNetworks.Add(new MeshNetworkEntity(IPAddress.Parse("0.0.0.0"), PORT, "1234567890", "Test Mesh"));
+
             byte[] dataBytes = MessageBuilder.BuildMessage(MessagesEnum.UDP_DISCOVER_REQUEST);
 
             // Get all network interfaces
@@ -92,9 +95,9 @@ namespace DistanceMeasure.ViewModel
 
             MeshNetworkEntity meshNetworkEntity = new(remoteEndPoint.Address, PORT, meshId, meshName);
 
-            if(!Items.Contains(meshNetworkEntity))
+            if(!MeshNetworks.Contains(meshNetworkEntity))
             {
-                Items.Add(meshNetworkEntity);
+                MeshNetworks.Add(meshNetworkEntity);
             }
 
         }
@@ -106,6 +109,15 @@ namespace DistanceMeasure.ViewModel
             uint broadCastIpAddress = ipAddress | ~ipMaskV4;
 
             return new IPAddress(BitConverter.GetBytes(broadCastIpAddress));
+        }
+
+        [RelayCommand]
+        async Task NavigateToMeshPage(MeshNetworkEntity meshNetworkEntity)
+        {
+            await Shell.Current.GoToAsync($"{nameof(MeshPage)}", new Dictionary<string, object>
+            {
+                { nameof(MeshNetworkEntity), meshNetworkEntity }
+            });
         }
     }
 }

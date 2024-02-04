@@ -8,7 +8,7 @@
 
 
     <ScrollView>
-        <StackLayout 
+        <VerticalStackLayout 
             HorizontalOptions="Center"
             MaximumWidthRequest="300">
             
@@ -18,7 +18,7 @@
                 Command="{Binding SearchForMeshCommand}"/>
 
             <CollectionView 
-                        ItemsSource="{Binding Items}"
+                        ItemsSource="{Binding MeshNetworks}"
                         SelectionMode="None"
                         HorizontalOptions="Center">
                 <CollectionView.ItemTemplate>
@@ -27,14 +27,13 @@
                             <Frame>
                                 <Frame.GestureRecognizers>
                                     <TapGestureRecognizer 
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainPageViewModel}}, Path=NavigateToMeshPageCommand}"
                                         CommandParameter="{Binding .}"/>
                                 </Frame.GestureRecognizers>
                                 <VerticalStackLayout>
-                                    <Label Text="{Binding MeshId,               StringFormat='Mesh ID: {0}'}"   FontSize="18"/>
+                                    <Label Text="{Binding MeshId,               StringFormat='Mesh ID: {0}'}"       FontSize="18"/>
                                     <Label Text="{Binding MeshServerName,       StringFormat='Server is \'{0}\''}"  FontSize="18"/>
-                                    <HorizontalStackLayout>
-                                        <Label Text="{Binding IpAddress,        StringFormat='Address: {0}'}"   FontSize="18"/>
-                                    </HorizontalStackLayout>
+                                    <Label Text="{Binding IpAddress,        StringFormat='Address: {0}'}"       FontSize="18"/>
                                 </VerticalStackLayout>
                             </Frame>
                         </Grid>
@@ -42,6 +41,6 @@
                 </CollectionView.ItemTemplate>
             </CollectionView>
             <Grid WidthRequest="300"/>
-        </StackLayout>
+        </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
