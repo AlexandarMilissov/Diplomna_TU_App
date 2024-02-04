@@ -25,6 +25,11 @@
                     <DataTemplate x:DataType="model:MeshNodeEntity">
                         <Grid Padding="0,5">
                             <Frame>
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer 
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainPageViewModel}}, Path=TapTestCommand}"
+                                        CommandParameter="{Binding .}"/>
+                                </Frame.GestureRecognizers>
                                 <VerticalStackLayout>
                                     <Label Text="{Binding Name,             StringFormat='Node: {0}'}"       FontSize="18"/>
                                     <Label Text="{Binding MacAddress,       StringFormat='Mac:  {0}'}"  FontSize="18"/>

@@ -38,7 +38,7 @@ namespace DistanceMeasure.ViewModel
         [RelayCommand]
         void SearchForMesh()
         {
-            MeshNetworks.Add(new MeshNetworkEntity(IPAddress.Parse("0.0.0.0"), PORT, "1234567890", "Test Mesh"));
+            //MeshNetworks.Add(new MeshNetworkEntity(IPAddress.Parse("0.0.0.0"), PORT, "1234567890", "Test Mesh"));
 
             byte[] dataBytes = MessageBuilder.BuildMessage(MessagesEnum.UDP_DISCOVER_REQUEST);
 
