@@ -43,6 +43,13 @@ namespace DistanceMeasure.ViewModel
             Debug.WriteLine("Tapped");
         }
 
+        [RelayCommand]
+        void BackButton()
+        {
+            DisconnectFromMesh();
+            Shell.Current.GoToAsync("..");
+        }
+
         void ConnectToMesh()
         {
             if (SelectedMesh == null)
@@ -80,6 +87,7 @@ namespace DistanceMeasure.ViewModel
                     int bytesRead = await tcpClient.GetStream().ReadAsync(buffer);
                     if (bytesRead == 0)
                     {
+                        // TODO: POPUP and close
                         Debug.WriteLine("Connection closed");
                         break;
                     }
@@ -95,6 +103,18 @@ namespace DistanceMeasure.ViewModel
                         default:
                             break;
                     }
+                }
+            }
+            catch (System.IO.IOException e)
+            {
+                if(e.InnerException is SocketException socketException &&
+                    socketException.SocketErrorCode == SocketError.OperationAborted)
+                {
+                    Debug.WriteLine("Connection reset");
+                }
+                else
+                {
+                    Debug.WriteLine(e.ToString());
                 }
             }
             catch (Exception e)

@@ -38,6 +38,8 @@ namespace DistanceMeasure.ViewModel
         [RelayCommand]
         void SearchForMesh()
         {
+            // Clear the list of mesh networks
+            MeshNetworks.Clear();
             //MeshNetworks.Add(new MeshNetworkEntity(IPAddress.Parse("0.0.0.0"), PORT, "1234567890", "Test Mesh"));
 
             byte[] dataBytes = MessageBuilder.BuildMessage(MessagesEnum.UDP_DISCOVER_REQUEST);
@@ -57,9 +59,13 @@ namespace DistanceMeasure.ViewModel
                     }
                     catch (SocketException e)
                     {
-                        // If the network is unreachable, ignore the error
-                        // Not all interfaces are connected to a network so some will throw this error
-                        if(e.SocketErrorCode != SocketError.NetworkUnreachable)
+                        // Not all network interfaces are in use, so we can ignore the NetworkUnreachable error
+                        if(e.SocketErrorCode == SocketError.NetworkUnreachable)
+                        {
+                            Debug.WriteLine($"Network Interface: {networkInterface.Id} is not in use.");
+                        }
+                        // If the error is different, rethrow the exception
+                        else
                         {
                             throw;
                         }
@@ -68,38 +74,52 @@ namespace DistanceMeasure.ViewModel
             }
         }
 
+        [RelayCommand]
+        async Task NavigateToMeshPage(MeshNetworkEntity meshNetworkEntity)
+        {
+            await Shell.Current.GoToAsync($"{nameof(MeshPage)}", new Dictionary<string, object>
+            {
+                { nameof(MeshNetworkEntity), meshNetworkEntity }
+            });
+
+            MeshNetworks.Clear();
+        }
+
         async void ReceiveMeshInfo()
         {
             try
             {
-                UdpReceiveResult result = await udpClient.ReceiveAsync();
-
-                // Check if the endpoint is null, this should never happen
-                // But ReceiveAsync expects a non-null endpoint
-                if (result.RemoteEndPoint == null)
+                while(true)
                 {
-                    throw new System.Exception("Remote endpoint is null");
-                }
+                    UdpReceiveResult result = await udpClient.ReceiveAsync();
 
-                byte[] receivedData = result.Buffer;
+                    // Check if the endpoint is null, this should never happen
+                    // But ReceiveAsync expects a non-null endpoint
+                    if (result.RemoteEndPoint == null)
+                    {
+                        throw new System.Exception("Remote endpoint is null");
+                    }
 
-                var messageType = MessageBuilder.GetMessage<MessagesEnum>(ref receivedData);
-                if (messageType != MessagesEnum.UDP_DISCOVER_RESPONSE)
-                {
-                    Debug.WriteLine("Received message is not a UDP_DISCOVER_RESPONSE");
-                    return;
-                }
+                    byte[] receivedData = result.Buffer;
 
-                byte[] meshIdArray = MessageBuilder.GetMessage<byte[]>(ref receivedData);
-                string meshId = BitConverter.ToString(meshIdArray);
+                    var messageType = MessageBuilder.GetMessage<MessagesEnum>(ref receivedData);
+                    if (messageType != MessagesEnum.UDP_DISCOVER_RESPONSE)
+                    {
+                        Debug.WriteLine("Received message is not a UDP_DISCOVER_RESPONSE");
+                        return;
+                    }
 
-                string meshName = MessageBuilder.GetMessage<String>(ref receivedData);
+                    byte[] meshIdArray = MessageBuilder.GetMessage<byte[]>(ref receivedData);
+                    string meshId = BitConverter.ToString(meshIdArray);
 
-                MeshNetworkEntity meshNetworkEntity = new(result.RemoteEndPoint.Address, PORT, meshId, meshName);
+                    string meshName = MessageBuilder.GetMessage<String>(ref receivedData);
 
-                if (!MeshNetworks.Contains(meshNetworkEntity))
-                {
-                    MeshNetworks.Add(meshNetworkEntity);
+                    MeshNetworkEntity meshNetworkEntity = new(result.RemoteEndPoint.Address, PORT, meshId, meshName);
+
+                    if (!MeshNetworks.Contains(meshNetworkEntity))
+                    {
+                        MeshNetworks.Add(meshNetworkEntity);
+                    }
                 }
             }
             catch(ObjectDisposedException)
@@ -120,15 +140,6 @@ namespace DistanceMeasure.ViewModel
             uint broadCastIpAddress = ipAddress | ~ipMaskV4;
 
             return new IPAddress(BitConverter.GetBytes(broadCastIpAddress));
-        }
-
-        [RelayCommand]
-        async Task NavigateToMeshPage(MeshNetworkEntity meshNetworkEntity)
-        {
-            await Shell.Current.GoToAsync($"{nameof(MeshPage)}", new Dictionary<string, object>
-            {
-                { nameof(MeshNetworkEntity), meshNetworkEntity }
-            });
         }
     }
 }

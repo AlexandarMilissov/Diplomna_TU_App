@@ -7,10 +7,19 @@
              xmlns:model="clr-namespace:DistanceMeasure.Model"
              x:DataType="viewmodel:MeshPageViewModel"
              >
+
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior Command="{Binding BackButtonCommand}"/>
+    </Shell.BackButtonBehavior>
+    
     <ScrollView>
         <VerticalStackLayout
                 HorizontalOptions="Center"
                 MaximumWidthRequest="300">
+
+            <Grid Padding="20"
+                WidthRequest="300"/>
+            
             <Label 
                 Text="{Binding SelectedMesh.MeshId, StringFormat='Mesh network: {0}'}"
                 Margin="0,5"
@@ -31,15 +40,14 @@
                                         CommandParameter="{Binding .}"/>
                                 </Frame.GestureRecognizers>
                                 <VerticalStackLayout>
-                                    <Label Text="{Binding Name,             StringFormat='Node: {0}'}"       FontSize="18"/>
+                                    <Label Text="{Binding Name,             StringFormat='Node: {0}'}"  FontSize="18"/>
                                     <Label Text="{Binding MacAddress,       StringFormat='Mac:  {0}'}"  FontSize="18"/>
-                                 </VerticalStackLayout>
+                                </VerticalStackLayout>
                             </Frame>
                         </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-            <Grid WidthRequest="300"/>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

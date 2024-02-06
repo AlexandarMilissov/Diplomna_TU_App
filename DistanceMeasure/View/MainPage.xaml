@@ -6,12 +6,14 @@
              xmlns:model="clr-namespace:DistanceMeasure.Model"
              x:DataType="viewmodel:MainPageViewModel">
 
-
     <ScrollView>
         <VerticalStackLayout 
             HorizontalOptions="Center"
             MaximumWidthRequest="300">
-            
+
+            <Grid Padding="20"
+                WidthRequest="300"/>
+
             <Button Text="Search for ESP Mesh."
                 Margin="0,5"
                 HorizontalOptions="FillAndExpand"
@@ -40,7 +42,6 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-            <Grid WidthRequest="300"/>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
