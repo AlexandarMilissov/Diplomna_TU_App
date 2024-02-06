@@ -23,7 +23,7 @@ namespace DistanceMeasure.ViewModel
             {
                 EnableBroadcast = true
             };
-            udpClient.BeginReceive(new AsyncCallback(ReceiveMeshInfo), null);
+            ReceiveMeshInfo();
         }
 
         ~MainPageViewModel()
@@ -68,38 +68,49 @@ namespace DistanceMeasure.ViewModel
             }
         }
 
-        void ReceiveMeshInfo(IAsyncResult res)
+        async void ReceiveMeshInfo()
         {
-            IPEndPoint? remoteEndPoint = new(IPAddress.Any, 0);
-            byte[] receivedData = udpClient.EndReceive(res, ref remoteEndPoint);
-            udpClient.BeginReceive(new AsyncCallback(ReceiveMeshInfo), null);
-
-            // Check if the endpoint is null, this should never happen
-            // But EndReceive expects a non-null endpoint
-            if(null == remoteEndPoint)
+            try
             {
-                throw new System.Exception("Remote endpoint is null");
-            }
+                UdpReceiveResult result = await udpClient.ReceiveAsync();
 
-            var messageType = MessageBuilder.GetMessage<MessagesEnum>(ref receivedData);
-            if(messageType != MessagesEnum.UDP_DISCOVER_RESPONSE)
+                // Check if the endpoint is null, this should never happen
+                // But ReceiveAsync expects a non-null endpoint
+                if (result.RemoteEndPoint == null)
+                {
+                    throw new System.Exception("Remote endpoint is null");
+                }
+
+                byte[] receivedData = result.Buffer;
+
+                var messageType = MessageBuilder.GetMessage<MessagesEnum>(ref receivedData);
+                if (messageType != MessagesEnum.UDP_DISCOVER_RESPONSE)
+                {
+                    Debug.WriteLine("Received message is not a UDP_DISCOVER_RESPONSE");
+                    return;
+                }
+
+                byte[] meshIdArray = MessageBuilder.GetMessage<byte[]>(ref receivedData);
+                string meshId = BitConverter.ToString(meshIdArray);
+
+                string meshName = MessageBuilder.GetMessage<String>(ref receivedData);
+
+                MeshNetworkEntity meshNetworkEntity = new(result.RemoteEndPoint.Address, PORT, meshId, meshName);
+
+                if (!MeshNetworks.Contains(meshNetworkEntity))
+                {
+                    MeshNetworks.Add(meshNetworkEntity);
+                }
+            }
+            catch(ObjectDisposedException)
             {
-                Debug.WriteLine("Received message is not a UDP_DISCOVER_RESPONSE");
-                return;
+                // The UDP client was closed/disposed, stop receiving
             }
-
-            byte[] meshIdArray = MessageBuilder.GetMessage<byte[]>(ref receivedData);
-            string meshId = BitConverter.ToString(meshIdArray);
-
-            string meshName = MessageBuilder.GetMessage<String>(ref receivedData);  
-
-            MeshNetworkEntity meshNetworkEntity = new(remoteEndPoint.Address, PORT, meshId, meshName);
-
-            if(!MeshNetworks.Contains(meshNetworkEntity))
+            catch(Exception e)
             {
-                MeshNetworks.Add(meshNetworkEntity);
+                // Log the exception
+                Debug.WriteLine(e.ToString());
             }
-
         }
 
         public static IPAddress GetBroadcastAddress(IPAddress address, IPAddress mask)

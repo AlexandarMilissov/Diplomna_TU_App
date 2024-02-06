@@ -1,10 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DistanceMeasure.Model;
+using DistanceMeasure.Utils;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Text;
 
 namespace DistanceMeasure.ViewModel
 {
@@ -38,18 +41,6 @@ namespace DistanceMeasure.ViewModel
         void TapTest()
         {
             Debug.WriteLine("Tapped");
-
-            if (tcpClient == null )
-            {
-                return;
-            }
-            char[] charData = ['h', 'e', 'l', 'l', 'o'];
-            byte[] data = new byte[charData.Length];
-            for (int i = 0; i < charData.Length; i++)
-            {
-                data[i] = (byte)charData[i];
-            }
-            tcpClient.Client.Send(data);
         }
 
         void ConnectToMesh()
@@ -63,11 +54,9 @@ namespace DistanceMeasure.ViewModel
 
             tcpClient.Connect(new(SelectedMesh.IpAddress, SelectedMesh.Port));
 
-            MeshNodes.Add(new MeshNodeEntity("Test Node  ", new System.Net.NetworkInformation.PhysicalAddress([0x00, 0x00, 0x00, 0x00, 0x00, 0x00])));
-            MeshNodes.Add(new MeshNodeEntity("Test Node 2", new System.Net.NetworkInformation.PhysicalAddress([0x00, 0x00, 0x00, 0x00, 0x00, 0x01])));
-            MeshNodes.Add(new MeshNodeEntity("Test Node 3", new System.Net.NetworkInformation.PhysicalAddress([0x00, 0x00, 0x00, 0x00, 0x00, 0x02])));
-        
-            TapTest();
+            tcpClient.Client.Send(MessageBuilder.BuildMessage(MessagesEnum.TCP_GET_NODES_REQUEST));
+            
+            ReceiveTcp();
         }
         void DisconnectFromMesh()
         {
@@ -75,5 +64,51 @@ namespace DistanceMeasure.ViewModel
             tcpClient?.Close();
             tcpClient = null;
         }
+
+        async void ReceiveTcp()
+        {
+            try
+            {
+                if(tcpClient == null)
+                {
+                    Debug.WriteLine("TcpClient is null");
+                    return;
+                }
+                while(true)
+                {
+                    Memory<byte> buffer = new byte[1024];
+                    int bytesRead = await tcpClient.GetStream().ReadAsync(buffer);
+                    if (bytesRead == 0)
+                    {
+                        Debug.WriteLine("Connection closed");
+                        break;
+                    }
+                    byte[] data = buffer.ToArray()[..bytesRead];
+
+                    MessagesEnum message = MessageBuilder.GetMessage<MessagesEnum>(ref data);
+
+                    switch (message)
+                    {
+                        case MessagesEnum.TCP_NODE_CONNECTED:
+                            HandleTcpNodeConnected(data);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.ToString());
+            }
+        }
+
+        void HandleTcpNodeConnected(byte[] data)
+        {
+            PhysicalAddress physicalAddress = new(MessageBuilder.GetMessage<byte[]>(ref data));
+            string name = MessageBuilder.GetMessage<string>(ref data);
+            MeshNodes.Add(new(name, physicalAddress));
+        }
+
     }
 }

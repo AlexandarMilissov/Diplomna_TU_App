@@ -27,7 +27,7 @@
                             <Frame>
                                 <Frame.GestureRecognizers>
                                     <TapGestureRecognizer 
-                                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainPageViewModel}}, Path=TapTestCommand}"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MeshPageViewModel}}, Path=TapTestCommand}"
                                         CommandParameter="{Binding .}"/>
                                 </Frame.GestureRecognizers>
                                 <VerticalStackLayout>
