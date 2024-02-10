@@ -31,6 +31,9 @@ namespace DistanceMeasure.ViewModel
         ObservableCollection<MeshNodeEntity> meshNodes = [];
 
         [ObservableProperty]
+        ObservableCollection<SettingEntity> meshSettings = [];
+
+        [ObservableProperty]
         MeshNetworkEntity? selectedMesh;
         public void ApplyQueryAttributes(IDictionary<String, Object> query)
         {
@@ -38,9 +41,15 @@ namespace DistanceMeasure.ViewModel
         }
 
         [RelayCommand]
-        void TapTest()
+        void OpenNode()
         {
-            Debug.WriteLine("Tapped");
+            MeshNodes.Add(new("Test", new([0,0,0,0,0,0])));  
+        }
+
+        [RelayCommand]
+        void OpenSetting()
+        {
+            MeshSettings.Add(new());
         }
 
         [RelayCommand]
@@ -62,7 +71,8 @@ namespace DistanceMeasure.ViewModel
             tcpClient.Connect(new(SelectedMesh.IpAddress, SelectedMesh.Port));
 
             tcpClient.Client.Send(MessageBuilder.BuildMessage(MessagesEnum.TCP_GET_NODES_REQUEST));
-            
+            tcpClient.Client.Send(MessageBuilder.BuildMessage(MessagesEnum.TCP_SERVER_OPTIONS_REQUEST));
+
             ReceiveTcp();
         }
         void DisconnectFromMesh()

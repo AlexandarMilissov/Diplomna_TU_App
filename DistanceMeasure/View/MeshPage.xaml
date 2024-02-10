@@ -5,49 +5,158 @@
              Title="MeshPage"
              xmlns:viewmodel="clr-namespace:DistanceMeasure.ViewModel"
              xmlns:model="clr-namespace:DistanceMeasure.Model"
+             xmlns:views="clr-namespace:DistanceMeasure.View"
              x:DataType="viewmodel:MeshPageViewModel"
              >
 
     <Shell.BackButtonBehavior>
         <BackButtonBehavior Command="{Binding BackButtonCommand}"/>
     </Shell.BackButtonBehavior>
-    
-    <ScrollView>
-        <VerticalStackLayout
-                HorizontalOptions="Center"
-                MaximumWidthRequest="300">
 
-            <Grid Padding="20"
-                WidthRequest="300"/>
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <DataTemplate x:Key="ConnectedNodesView">
+                <Frame WidthRequest="300">
+                    <Grid
+                        HorizontalOptions="Center">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <Label 
+                            Text="Connected Nodes:" 
+                            FontSize="18"
+                            Grid.Row="0"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            Padding="0,0,0,15"/>
+
+                        <ScrollView
+                           HorizontalOptions="Fill"
+                           VerticalOptions="Fill"
+                           Grid.Row="1">
+
+                            <CollectionView 
+                                        ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MeshPageViewModel}}, Path=MeshNodes}"
+                                        SelectionMode="None"
+                                        HorizontalOptions="Center"
+                                        Grid.Row="1">
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="model:MeshNodeEntity">
+                                            <Grid Padding="0,5">
+                                                <Frame>
+                                                    <Frame.GestureRecognizers>
+                                                        <TapGestureRecognizer 
+                                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MeshPageViewModel}}, Path=OpenNode}"
+                                                                CommandParameter="{Binding .}"/>
+                                                    </Frame.GestureRecognizers>
+                                                    <VerticalStackLayout>
+                                                        <Label Text="{Binding Name,             StringFormat='Node: {0}'}"  FontSize="18"/>
+                                                        <Label Text="{Binding MacAddress,       StringFormat='Mac:  {0}'}"  FontSize="18"/>
+                                                    </VerticalStackLayout>
+                                                </Frame>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            
+                        </ScrollView>
+                    </Grid>
+                </Frame>
+            </DataTemplate>
             
-            <Label 
-                Text="{Binding SelectedMesh.MeshId, StringFormat='Mesh network: {0}'}"
-                Margin="0,5"
-                VerticalOptions="Center"
-                HorizontalOptions="FillAndExpand"
-                FontSize="18"/>
-            <CollectionView 
-                ItemsSource="{Binding MeshNodes}"
-                SelectionMode="None"
-                HorizontalOptions="Center">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="model:MeshNodeEntity">
-                        <Grid Padding="0,5">
-                            <Frame>
-                                <Frame.GestureRecognizers>
-                                    <TapGestureRecognizer 
-                                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MeshPageViewModel}}, Path=TapTestCommand}"
-                                        CommandParameter="{Binding .}"/>
-                                </Frame.GestureRecognizers>
-                                <VerticalStackLayout>
-                                    <Label Text="{Binding Name,             StringFormat='Node: {0}'}"  FontSize="18"/>
-                                    <Label Text="{Binding MacAddress,       StringFormat='Mac:  {0}'}"  FontSize="18"/>
-                                </VerticalStackLayout>
-                            </Frame>
-                        </Grid>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-        </VerticalStackLayout>
-    </ScrollView>
+            
+            <DataTemplate x:Key="GlobalMeshSesttingsView">
+                <Frame WidthRequest="300">
+                    <Grid HorizontalOptions="Center">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Label 
+                            Text="Mesh settings:" 
+                            FontSize="18"
+                            Grid.Row="0"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            Padding="0,0,0,15"/>
+
+                        <ScrollView
+                           HorizontalOptions="Fill"
+                           VerticalOptions="Fill"
+                           Grid.Row="1">
+
+                            <CollectionView 
+                                ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MeshPageViewModel}}, Path=MeshSettings}"
+                                SelectionMode="None"
+                                HorizontalOptions="Center"
+                                Grid.Row="1">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="model:MeshNodeEntity">
+                                        <Grid Padding="0,5">
+                                            <Frame>
+                                                <Frame.GestureRecognizers>
+                                                    <TapGestureRecognizer 
+                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MeshPageViewModel}}, Path=OpenSetting}"
+                                                        CommandParameter="{Binding .}"/>
+                                                </Frame.GestureRecognizers>
+                                                <VerticalStackLayout>
+                                                    <Label Text="Test setting"  FontSize="18"/>                                                    
+                                                </VerticalStackLayout>
+                                            </Frame>
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+
+                        </ScrollView>
+                    </Grid>
+                </Frame>
+            </DataTemplate>
+
+            <views:MeshPageDataSelector x:Key="MeshPageDataSelector"
+                    ConnectedModesDateTemplate="{StaticResource ConnectedNodesView}"
+                    GlobalMeshSesttingsDataTemplate="{StaticResource GlobalMeshSesttingsView}"/>
+
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Label 
+            Text="{Binding SelectedMesh.MeshId, StringFormat='Mesh network: {0}'}"
+            Margin="0,5"
+            Padding="0,30,0,15"
+            VerticalOptions="Center"
+            HorizontalOptions="Center"
+            FontSize="18"
+            Grid.Row="0"/>
+
+
+        <CarouselView ItemTemplate="{StaticResource MeshPageDataSelector}"
+                      Loop="False"
+                      HorizontalScrollBarVisibility="Never"
+                      Grid.Row="1"
+                      Margin="0,0,0,10">
+            <CarouselView.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>ConnectedNodes</x:String>
+                    <x:String>GlobalMeshSettings</x:String>
+                </x:Array>
+            </CarouselView.ItemsSource>
+            <CarouselView.ItemsLayout>
+                <LinearItemsLayout 
+                    Orientation="Horizontal" 
+                    SnapPointsType="Mandatory" 
+                    SnapPointsAlignment="Center"
+                    ItemSpacing="10" />
+            </CarouselView.ItemsLayout>
+        </CarouselView>
+
+    </Grid>
 </ContentPage>
