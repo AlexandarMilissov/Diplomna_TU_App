@@ -35,7 +35,7 @@
                                 <VerticalStackLayout>
                                     <Label Text="{Binding MeshId,               StringFormat='Mesh ID: {0}'}"       FontSize="18"/>
                                     <Label Text="{Binding MeshServerName,       StringFormat='Server is \'{0}\''}"  FontSize="18"/>
-                                    <Label Text="{Binding IpAddress,        StringFormat='Address: {0}'}"       FontSize="18"/>
+                                    <Label Text="{Binding IpAddress,            StringFormat='Address: {0}'}"       FontSize="18"/>
                                 </VerticalStackLayout>
                             </Frame>
                         </Grid>

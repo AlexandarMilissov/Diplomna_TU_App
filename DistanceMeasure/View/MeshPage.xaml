@@ -22,20 +22,29 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
+                        <Grid WidthRequest="300"/>
                         
+                        <Button 
+                            Text="Get Connected Nodes"
+                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MeshPageViewModel}}, Path=GetAllNodesCommand}"
+                            Grid.Row="0"
+                            HorizontalOptions="Fill"
+                            Padding="0,0,0,0"/>
+
                         <Label 
                             Text="Connected Nodes:" 
                             FontSize="18"
-                            Grid.Row="0"
+                            Grid.Row="1"
                             HorizontalOptions="Center"
                             VerticalOptions="Center"
-                            Padding="0,0,0,15"/>
+                            Padding="0,15,0,15"/>
 
                         <ScrollView
                            HorizontalOptions="Fill"
                            VerticalOptions="Fill"
-                           Grid.Row="1">
+                           Grid.Row="2">
 
                             <CollectionView 
                                         ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MeshPageViewModel}}, Path=MeshNodes}"
@@ -48,7 +57,7 @@
                                                 <Frame>
                                                     <Frame.GestureRecognizers>
                                                         <TapGestureRecognizer 
-                                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MeshPageViewModel}}, Path=OpenNode}"
+                                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MeshPageViewModel}}, Path=OpenNodeCommand}"
                                                                 CommandParameter="{Binding .}"/>
                                                     </Frame.GestureRecognizers>
                                                     <VerticalStackLayout>
@@ -73,20 +82,30 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
+                        <Grid WidthRequest="300"/>
+
+                        <Button 
+                            Text="Get Global Settings"
+                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MeshPageViewModel}}, Path=GetAllGlobalSettingsCommand}"
+                            Grid.Row="0"
+                            HorizontalOptions="Fill"
+                            Padding="0,0,0,0"/>
 
                         <Label 
                             Text="Mesh settings:" 
                             FontSize="18"
-                            Grid.Row="0"
+                            Grid.Row="1"
                             HorizontalOptions="Center"
                             VerticalOptions="Center"
-                            Padding="0,0,0,15"/>
+                            Padding="0,15,0,15"
+                            />
 
                         <ScrollView
                            HorizontalOptions="Fill"
                            VerticalOptions="Fill"
-                           Grid.Row="1">
+                           Grid.Row="2">
 
                             <CollectionView 
                                 ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MeshPageViewModel}}, Path=MeshSettings}"
@@ -94,23 +113,37 @@
                                 HorizontalOptions="Center"
                                 Grid.Row="1">
                                 <CollectionView.ItemTemplate>
-                                    <DataTemplate x:DataType="model:MeshNodeEntity">
+                                    <DataTemplate x:DataType="model:ComponentSettingsEntity">
                                         <Grid Padding="0,5">
                                             <Frame>
                                                 <Frame.GestureRecognizers>
                                                     <TapGestureRecognizer 
-                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MeshPageViewModel}}, Path=OpenSetting}"
+                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MeshPageViewModel}}, Path=OpenSettingCommand}"
                                                         CommandParameter="{Binding .}"/>
                                                 </Frame.GestureRecognizers>
                                                 <VerticalStackLayout>
-                                                    <Label Text="Test setting"  FontSize="18"/>                                                    
+                                                    <Label Text="{Binding Name}"  FontSize="18"/>
+                                                    <CollectionView
+                                                        ItemsSource="{Binding Settings}"
+                                                        SelectionMode="None"
+                                                        HorizontalOptions="Center">
+                                                        <CollectionView.ItemTemplate>
+                                                            <DataTemplate x:DataType="model:SettingEntity">
+                                                                <Frame>
+                                                                    <VerticalStackLayout>
+                                                                        <Label Text="{Binding Name}"   FontSize="18"/>
+                                                                        <Label Text="{Binding Value}"  FontSize="18"/>
+                                                                    </VerticalStackLayout>
+                                                                </Frame>
+                                                            </DataTemplate>
+                                                        </CollectionView.ItemTemplate>
+                                                    </CollectionView>
                                                 </VerticalStackLayout>
                                             </Frame>
                                         </Grid>
                                     </DataTemplate>
                                 </CollectionView.ItemTemplate>
                             </CollectionView>
-
                         </ScrollView>
                     </Grid>
                 </Frame>

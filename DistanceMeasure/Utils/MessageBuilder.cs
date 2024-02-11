@@ -33,7 +33,10 @@ namespace DistanceMeasure.Utils
             return templateType.Name switch
             {
                 nameof(MessagesEnum) => (TemplateType)(object)GetMessagesEnumVar(ref message),
+                nameof(ValueEnum) =>    (TemplateType)(object)GetValueEnumVar   (ref message),
+                nameof(UInt64) =>       (TemplateType)(object)GetUInt64Var      (ref message),
                 nameof(Int32) =>        (TemplateType)(object)GetInt32Var       (ref message),
+                nameof(Boolean) =>      (TemplateType)(object)GetBooleanVar     (ref message),
                 nameof(String) =>       (TemplateType)(object)GetStringVar      (ref message),
                 _ => throw new NotImplementedException(),
             };
@@ -51,6 +54,10 @@ namespace DistanceMeasure.Utils
         {
             return (MessagesEnum)GetInt32Var(ref message);
         }
+        private static ValueEnum GetValueEnumVar(ref byte[] message)
+        {
+            return (ValueEnum)GetInt32Var(ref message);
+        }
         private static byte[] GetByteArray(ref byte[] message)
         {
             Int32 length = GetSize(ref message);
@@ -67,6 +74,34 @@ namespace DistanceMeasure.Utils
             }
 
             return GetSize(ref message);
+        }
+        private static UInt64 GetUInt64Var(ref byte[] message)
+        {
+            int valueSize = GetSize(ref message);
+            if (valueSize != sizeof(UInt64))
+            {
+                throw new Exception("Invalid size");
+            }
+
+            UInt64 value = BitConverter.ToUInt64(message, 0);
+
+            message = message[valueSize..];
+
+            return value;
+        }   
+        private static Boolean GetBooleanVar(ref byte[] message)
+        {
+            int valueSize = GetSize(ref message);
+            if (valueSize != sizeof(Boolean))
+            {
+                throw new Exception("Invalid size");
+            }
+
+            Boolean value = BitConverter.ToBoolean(message, 0);
+
+            message = message[valueSize..];
+
+            return value;
         }
         private static string GetStringVar(ref byte[] message)
         {

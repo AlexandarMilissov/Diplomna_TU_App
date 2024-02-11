@@ -31,13 +31,35 @@ namespace DistanceMeasure.ViewModel
         ObservableCollection<MeshNodeEntity> meshNodes = [];
 
         [ObservableProperty]
-        ObservableCollection<SettingEntity> meshSettings = [];
+        ObservableCollection<ComponentSettingsEntity> meshSettings = [];
 
         [ObservableProperty]
         MeshNetworkEntity? selectedMesh;
         public void ApplyQueryAttributes(IDictionary<String, Object> query)
         {
             SelectedMesh = (MeshNetworkEntity)query[nameof(MeshNetworkEntity)];
+        }
+
+        [RelayCommand]
+        void GetAllNodes()
+        {
+            if (tcpClient == null)
+            {
+                return;
+            }
+            MeshNodes.Clear();
+            _ = tcpClient.Client.Send(MessageBuilder.BuildMessage(MessagesEnum.TCP_GET_NODES_REQUEST));
+        }
+
+        [RelayCommand]
+        void GetAllGlobalSettings()
+        {
+            if (tcpClient == null)
+            {
+                return;
+            }
+            MeshSettings.Clear();
+            _ = tcpClient.Client.Send(MessageBuilder.BuildMessage(MessagesEnum.TCP_GLOBAL_OPTIONS_REQUEST));
         }
 
         [RelayCommand]
@@ -49,7 +71,8 @@ namespace DistanceMeasure.ViewModel
         [RelayCommand]
         void OpenSetting()
         {
-            MeshSettings.Add(new());
+            SettingEntity setting = new("Test", 0, ValueEnum.UINT32, [0,0,0,0], false, false);
+            MeshSettings.Add(new("Test", [setting]));
         }
 
         [RelayCommand]
@@ -69,12 +92,12 @@ namespace DistanceMeasure.ViewModel
             tcpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
 
             tcpClient.Connect(new(SelectedMesh.IpAddress, SelectedMesh.Port));
-
-            tcpClient.Client.Send(MessageBuilder.BuildMessage(MessagesEnum.TCP_GET_NODES_REQUEST));
-            tcpClient.Client.Send(MessageBuilder.BuildMessage(MessagesEnum.TCP_SERVER_OPTIONS_REQUEST));
-
             ReceiveTcp();
+
+            GetAllNodes();
+            GetAllGlobalSettings();
         }
+        
         void DisconnectFromMesh()
         {
             MeshNodes.Clear();
@@ -110,6 +133,9 @@ namespace DistanceMeasure.ViewModel
                         case MessagesEnum.TCP_NODE_CONNECTED:
                             HandleTcpNodeConnected(data);
                             break;
+                        case MessagesEnum.TCP_GLOBAL_OPTIONS_RESPONSE:
+                            HandleTcpGlobalOptionsResponse(data);
+                            break;
                         default:
                             break;
                     }
@@ -133,12 +159,43 @@ namespace DistanceMeasure.ViewModel
             }
         }
 
+        void HandleTcpGlobalOptionsResponse(byte[] data)
+        {
+            Debug.WriteLine("HandleTcpGlobalOptionsResponse");
+
+            string componentName = MessageBuilder.GetMessage<string>(ref data);
+            List<SettingEntity> settings = [];
+
+            while (data.Length > 0)
+            {
+                string settingName  = MessageBuilder.GetMessage<string>     (ref data);
+                UInt64 checksum     = MessageBuilder.GetMessage<UInt64>     (ref data);
+                ValueEnum value     = MessageBuilder.GetMessage<ValueEnum>  (ref data);
+                byte[] settingData  = MessageBuilder.GetMessage<byte[]>     (ref data);
+                bool saveToNvs      = MessageBuilder.GetMessage<Boolean>    (ref data);
+                bool updateRequired = MessageBuilder.GetMessage<Boolean>    (ref data);
+
+                settings.Add(new(settingName, checksum, value, settingData, saveToNvs, updateRequired));
+            }
+
+            ComponentSettingsEntity componentSettingsEntity = new(componentName, settings);
+
+            var itemIndex = MeshSettings.IndexOf(componentSettingsEntity);
+            if( itemIndex == -1)
+            {
+                MeshSettings.Add(componentSettingsEntity);
+            }
+            else
+            {
+                MeshSettings[itemIndex] = componentSettingsEntity;
+            }   
+        }
+
         void HandleTcpNodeConnected(byte[] data)
         {
             PhysicalAddress physicalAddress = new(MessageBuilder.GetMessage<byte[]>(ref data));
             string name = MessageBuilder.GetMessage<string>(ref data);
             MeshNodes.Add(new(name, physicalAddress));
         }
-
     }
 }

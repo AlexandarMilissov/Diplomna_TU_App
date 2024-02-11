@@ -24,6 +24,7 @@ namespace DistanceMeasure.ViewModel
                 EnableBroadcast = true
             };
             ReceiveMeshInfo();
+            SearchForMesh();
         }
 
         ~MainPageViewModel()
